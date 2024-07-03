@@ -59,10 +59,10 @@ namespace AR2VR
         /// <summary>
         /// 分割檔案(存記憶體)
         /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="chunkSizeInBytes"></param>
-        /// <param name="source"></param>
-        /// <param name="loading"></param>
+        /// <param name="filePath">要分割檔案路徑</param>
+        /// <param name="chunkSizeInBytes">切割大小</param>
+        /// <param name="source">取消令牌</param>
+        /// <param name="loading">進度事件</param>
         /// <returns></returns>
         public static async Task<SplitFileToChunksResult> SplitFileToChunks(string filePath, int chunkSizeInBytes, CancellationTokenSource source = null, Action<float> loading = null)
         {
@@ -157,10 +157,10 @@ namespace AR2VR
         /// <summary>
         /// 分割檔案並另存新檔
         /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="chunkSizeInBytes"></param>
-        /// <param name="source"></param>
-        /// <param name="loading"></param>
+        /// <param name="filePath">要分割檔案路徑</param>
+        /// <param name="chunkSizeInBytes">切割大小</param>
+        /// <param name="source">取消令牌</param>
+        /// <param name="loading">進度事件</param>
         /// <returns></returns>
         public static async Task<SplitFileResult> SplitFile(string filePath, int chunkSizeInBytes,CancellationTokenSource source = null, Action<float> loading = null)
         {
