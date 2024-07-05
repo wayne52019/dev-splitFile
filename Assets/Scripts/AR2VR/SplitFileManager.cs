@@ -12,7 +12,7 @@ namespace AR2VR
         {
             get
             {
-                return "1";
+                return "2";
             }
         }
 
@@ -31,7 +31,7 @@ namespace AR2VR
         /// </summary>
         public class SplitFileToChunksResult
         {
-            public SplitFileToChunksResult(State s,byte[][] r)
+            public SplitFileToChunksResult(State s, ResultClass[] r)
             {
                 _state = s;
 
@@ -47,14 +47,68 @@ namespace AR2VR
             }
             State _state;
 
-            public byte[][] result
+            /// <summary>
+            /// 結果類
+            /// </summary>
+            public class ResultClass
+            {
+                public ResultClass(byte[] Bts, long FileSize, long ChunkSize)
+                {
+                    _bts = Bts;
+
+                    _fileSize = FileSize;
+
+                    _chunkSize = ChunkSize;
+                }
+
+                /// <summary>
+                /// 檔案位元組
+                /// </summary>
+                public byte[] bts
+                {
+                    get
+                    {
+                        return _bts;
+                    }
+                }
+                byte[] _bts;
+
+                /// <summary>
+                /// 檔案大小
+                /// </summary>
+                public long fileSize
+                {
+                    get
+                    {
+                        return _fileSize;
+                    }
+                }
+                long _fileSize;
+
+                /// <summary>
+                /// 設定分割大小
+                /// </summary>
+                public long chunkSize
+                {
+                    get
+                    {
+                        return _chunkSize;
+                    }
+                }
+                long _chunkSize;
+            }
+
+            /// <summary>
+            /// 結果
+            /// </summary>
+            public ResultClass[] result
             {
                 get
                 {
                     return _result;
                 }
             }
-            byte[][] _result;
+            ResultClass[] _result;
         }
         /// <summary>
         /// 分割檔案(存記憶體)
@@ -66,7 +120,7 @@ namespace AR2VR
         /// <returns></returns>
         public static async Task<SplitFileToChunksResult> SplitFileToChunks(string filePath, int chunkSizeInBytes, CancellationTokenSource source = null, Action<float> loading = null)
         {
-            byte[][] chunks = null;
+            SplitFileToChunksResult.ResultClass[] result;
 
             State state = State.success;
 
@@ -76,7 +130,7 @@ namespace AR2VR
                 {
                     var amount = GetChunkAmout(fileStream, chunkSizeInBytes);
 
-                    chunks = new byte[amount][];
+                    result = new SplitFileToChunksResult.ResultClass[amount];
 
                     byte[] buffer = new byte[chunkSizeInBytes];
 
@@ -101,7 +155,7 @@ namespace AR2VR
                             chunk = (byte[])buffer.Clone();
                         }
 
-                        chunks[index] = chunk;
+                        result[index] = new SplitFileToChunksResult.ResultClass(chunk, chunk.Length, chunkSizeInBytes);
 
                         index++;
 
@@ -111,7 +165,7 @@ namespace AR2VR
             }
             catch(Exception e)
             {
-                chunks = null;
+                result = null;
 
                 //取消
                 if (e.Message == "A task was canceled.")
@@ -121,7 +175,7 @@ namespace AR2VR
                     state = State.fail;
             }
 
-            return new SplitFileToChunksResult(state, chunks);
+            return new SplitFileToChunksResult(state, result);
         }
 
         /// <summary>
@@ -129,13 +183,16 @@ namespace AR2VR
         /// </summary>
         public class SplitFileResult
         {
-            public SplitFileResult(State s, string[] r)
+            public SplitFileResult(State s, ResultClass[] r)
             {
                 _state = s;
 
                 _result = r;
             }
 
+            /// <summary>
+            /// 狀態
+            /// </summary>
             public State state
             {
                 get
@@ -145,14 +202,68 @@ namespace AR2VR
             }
             State _state;
 
-            public string[] result
+            /// <summary>
+            /// 結果類
+            /// </summary>
+            public class ResultClass
+            {
+                public ResultClass(string Path,long FileSize,long ChunkSize)
+                {
+                    _path = Path;
+
+                    _fileSize = FileSize;
+
+                    _chunkSize = ChunkSize;
+                }
+
+                /// <summary>
+                /// 檔案路徑
+                /// </summary>
+                public string path
+                {
+                    get
+                    {
+                        return _path;
+                    }
+                }
+                string _path;
+
+                /// <summary>
+                /// 檔案大小
+                /// </summary>
+                public long fileSize
+                {
+                    get
+                    {
+                        return _fileSize;
+                    }
+                }
+                long _fileSize;
+
+                /// <summary>
+                /// 設定分割大小
+                /// </summary>
+                public long chunkSize
+                {
+                    get
+                    {
+                        return _chunkSize;
+                    }
+                }
+                long _chunkSize;
+            }
+
+            /// <summary>
+            /// 結果
+            /// </summary>
+            public ResultClass[] result
             {
                 get
                 {
                     return _result;
                 }
             }
-            string[] _result;
+            ResultClass[] _result;
         }
         /// <summary>
         /// 分割檔案並另存新檔
@@ -164,9 +275,9 @@ namespace AR2VR
         /// <returns></returns>
         public static async Task<SplitFileResult> SplitFile(string filePath, int chunkSizeInBytes,CancellationTokenSource source = null, Action<float> loading = null)
         {
-            string[] chunkPaths = null;
-
             State state = State.success;
+
+            SplitFileResult.ResultClass[] result;
 
             try
             {
@@ -176,7 +287,7 @@ namespace AR2VR
 
                     byte[] buffer = new byte[chunkSizeInBytes];
 
-                    chunkPaths = new string[amount];
+                    result = new SplitFileResult.ResultClass[amount];
 
                     int index = 0;
 
@@ -191,8 +302,9 @@ namespace AR2VR
                         using (FileStream chunkFile = new FileStream(chunkFileName, FileMode.Create))
                         {
                             await chunkFile.WriteAsync(buffer, 0, bytesRead);
+
+                            result[index] = new SplitFileResult.ResultClass(chunkFileName, chunkFile.Length, chunkSizeInBytes);
                         }
-                        chunkPaths[index] = chunkFileName;
 
                         index++;
 
@@ -202,7 +314,7 @@ namespace AR2VR
             }
             catch (Exception e)
             {
-                chunkPaths = null;
+                result = null;
 
                 //取消
                 if (e.Message == "A task was canceled.")
@@ -212,7 +324,7 @@ namespace AR2VR
                     state = State.fail;
             }
 
-            return new SplitFileResult(state, chunkPaths);
+            return new SplitFileResult(state, result);
         }
 
         /// <summary>

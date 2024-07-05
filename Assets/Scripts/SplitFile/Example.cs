@@ -30,7 +30,18 @@ public class Example : MonoBehaviour
         switch (result.state)
         {
             case AR2VR.SplitFileManager.State.success:
-                File.WriteAllBytes(Application.streamingAssetsPath + "/SplitFileTest/test2.mp4", AR2VR.SplitFileManager.Reorganization(result.result));
+                byte[][] b = new byte[result.result.Length][];
+
+                int index = 0;
+
+                foreach(var item in result.result)
+                {
+                    b[index] = item.bts;
+
+                    index++;
+                }
+
+                File.WriteAllBytes(Application.streamingAssetsPath + "/SplitFileTest/test2.mp4", AR2VR.SplitFileManager.Reorganization(b));
                 break;
             case AR2VR.SplitFileManager.State.fail:
                 break;
@@ -65,7 +76,7 @@ public class Example : MonoBehaviour
 
                 foreach(var item in result.result)
                 {
-                    b[index] = File.ReadAllBytes(item);
+                    b[index] = File.ReadAllBytes(item.path);
                     index++;
                 }
 
