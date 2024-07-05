@@ -12,7 +12,7 @@ namespace AR2VR
         {
             get
             {
-                return "2";
+                return "3";
             }
         }
 
@@ -31,11 +31,13 @@ namespace AR2VR
         /// </summary>
         public class SplitFileToChunksResult
         {
-            public SplitFileToChunksResult(State s, ResultClass[] r)
+            public SplitFileToChunksResult(State s, ResultClass[] r, long OriginalFileSize)
             {
                 _state = s;
 
                 _result = r;
+
+                _originalFileSize = OriginalFileSize;
             }
 
             public State state
@@ -109,6 +111,18 @@ namespace AR2VR
                 }
             }
             ResultClass[] _result;
+
+            /// <summary>
+            /// 原始檔案大小
+            /// </summary>
+            public long originalFileSize
+            {
+                get
+                {
+                    return _originalFileSize;
+                }
+            }
+            long _originalFileSize;
         }
         /// <summary>
         /// 分割檔案(存記憶體)
@@ -123,6 +137,8 @@ namespace AR2VR
             SplitFileToChunksResult.ResultClass[] result;
 
             State state = State.success;
+
+            long OriginalFileSize = 0;
 
             try
             {
@@ -139,6 +155,8 @@ namespace AR2VR
                     int bytesRead;
 
                     loading?.Invoke((float)index / (float)amount);
+
+                    OriginalFileSize = fileStream.Length;
 
                     while ((bytesRead = await (source != null ? fileStream.ReadAsync(buffer, 0, chunkSizeInBytes, source.Token) : fileStream.ReadAsync(buffer, 0, chunkSizeInBytes))) > 0)
                     {
@@ -175,7 +193,7 @@ namespace AR2VR
                     state = State.fail;
             }
 
-            return new SplitFileToChunksResult(state, result);
+            return new SplitFileToChunksResult(state, result, OriginalFileSize);
         }
 
         /// <summary>
@@ -183,11 +201,13 @@ namespace AR2VR
         /// </summary>
         public class SplitFileResult
         {
-            public SplitFileResult(State s, ResultClass[] r)
+            public SplitFileResult(State s, ResultClass[] r,long OriginalFileSize)
             {
                 _state = s;
 
                 _result = r;
+
+                _originalFileSize = OriginalFileSize;
             }
 
             /// <summary>
@@ -264,6 +284,18 @@ namespace AR2VR
                 }
             }
             ResultClass[] _result;
+
+            /// <summary>
+            /// 原始檔案大小
+            /// </summary>
+            public long originalFileSize
+            {
+                get
+                {
+                    return _originalFileSize;
+                }
+            }
+            long _originalFileSize;
         }
         /// <summary>
         /// 分割檔案並另存新檔
@@ -278,6 +310,8 @@ namespace AR2VR
             State state = State.success;
 
             SplitFileResult.ResultClass[] result;
+
+            long OriginalFileSize = 0;
 
             try
             {
@@ -294,6 +328,8 @@ namespace AR2VR
                     int bytesRead;
 
                     loading?.Invoke((float)index / (float)amount);
+
+                    OriginalFileSize = fileStream.Length;
 
                     while ((bytesRead = await (source != null ? fileStream.ReadAsync(buffer, 0, chunkSizeInBytes, source.Token) : fileStream.ReadAsync(buffer, 0, chunkSizeInBytes))) > 0)
                     {
@@ -324,7 +360,7 @@ namespace AR2VR
                     state = State.fail;
             }
 
-            return new SplitFileResult(state, result);
+            return new SplitFileResult(state, result, OriginalFileSize);
         }
 
         /// <summary>
